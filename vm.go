@@ -184,8 +184,30 @@ func executeCycle(s *State, t *Timers) {
 		break
 
 	case 0xD000: // DXYN - Draws a Sprite
-		// TODO - Implement Graphics
-		fmt.Printf("DRW\n")
+		// Draws a sprite at rX, rY that is 8 pixels wide and N pixels tall
+		// Each row of pixels starts the IndexPointer
+		// IndexPointer is not incremented after this operation
+		// rF is set if if any screen pixels are flipped from set to unset
+		var height = s.currentOpcode & 0x000F
+		var pixel = uint8(0)
+		fmt.Printf("DRW %d %d %d\n", rX, rY, height)
+
+		s.registers[0xF] = 0
+
+		for y := uint16(0); y < height; y++ {
+			pixel = s.memory[s.indexPointer+y]
+			for x := uint16(0); x < 8; x++ {
+				if (pixel & (0x80 >> x)) != 0 {
+					var offset = (rX + x + ((rY + y) * 64))
+					if s.graphicsBuffer[offset] == 1 {
+						s.registers[0xF] = 1
+					}
+
+					s.graphicsBuffer[offset] ^= 1
+				}
+			}
+		}
+
 		s.drawFlag = true
 		break
 
