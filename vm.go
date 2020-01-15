@@ -31,7 +31,7 @@ func executeCycle(s *State, t *Timers) {
 			fmt.Println("RET")
 			s.stackPointer--
 			s.programCounter = s.stack[s.stackPointer]
-			return
+			break
 
 		default:
 			fmt.Printf("0x0000 - Unimplemented Opcode: %.4X\n", s.currentOpcode)
@@ -51,16 +51,16 @@ func executeCycle(s *State, t *Timers) {
 		return
 
 	case 0x3000: // 3XNN - Skip next instruction if RegisterX == NN
-		fmt.Printf("SE %d %.4X\n", rX, s.currentOpcode&0x00FF)
-		var value = (s.currentOpcode & 0x00FF) >> 8
+		fmt.Printf("SE %d %.4X\n", rX, (s.currentOpcode & 0x00FF))
+		var value = (s.currentOpcode & 0x00FF)
 		if s.registers[rX] == uint8(value) {
 			s.programCounter += 2
 		}
 		break
 
 	case 0x4000: // 3XNN - Skip next instruction if RegisterX != NN
-		fmt.Printf("SNE %d %.4X\n", rX, (s.currentOpcode&0x00FF)>>8)
-		var value = (s.currentOpcode & 0x00FF) >> 8
+		fmt.Printf("SNE %d %.4X\n", rX, (s.currentOpcode & 0x00FF))
+		var value = (s.currentOpcode & 0x00FF)
 		if s.registers[rX] != uint8(value) {
 			s.programCounter += 2
 		}
