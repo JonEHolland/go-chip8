@@ -11,6 +11,8 @@ func executeCycle(s *State, t *Timers) {
 	var rX = (s.currentOpcode & 0x0F00) >> 8
 	var rY = (s.currentOpcode & 0x00F0) >> 4
 
+	fmt.Printf("%.4X - ", s.programCounter)
+
 	switch s.currentOpcode & 0xF000 {
 
 	case 0x0000:
@@ -28,8 +30,8 @@ func executeCycle(s *State, t *Timers) {
 		case 0x00EE: // 00EE - Return from Subroutine
 			fmt.Println("RET")
 			s.stackPointer--
-			s.programCounter = s.stack[s.stackPointer] - 2
-			break
+			s.programCounter = s.stack[s.stackPointer]
+			return
 
 		default:
 			fmt.Printf("0x0000 - Unimplemented Opcode: %.4X\n", s.currentOpcode)
@@ -38,15 +40,15 @@ func executeCycle(s *State, t *Timers) {
 
 	case 0x1000: // 1NNN - Jump to address NNN
 		fmt.Printf("JP %.4X\n", s.currentOpcode&0x0FFF)
-		s.programCounter = (s.currentOpcode & 0x0FFF) - 2
-		break
+		s.programCounter = (s.currentOpcode & 0x0FFF)
+		return
 
 	case 0x2000: // 2NNN - Call Subroutine at NNN
 		fmt.Printf("CALL %.4X\n", s.currentOpcode&0x0FFF)
 		s.stack[s.stackPointer] = s.programCounter
 		s.stackPointer++
-		s.programCounter = (s.currentOpcode & 0x0FFF) - 2
-		break
+		s.programCounter = (s.currentOpcode & 0x0FFF)
+		return
 
 	case 0x3000: // 3XNN - Skip next instruction if RegisterX == NN
 		fmt.Printf("SE %d %.4X\n", rX, s.currentOpcode&0x00FF)
@@ -153,7 +155,6 @@ func executeCycle(s *State, t *Timers) {
 			s.registers[rX] <<= 1
 			break
 		default:
-			// TODO - Remove this
 			fmt.Printf("0x8000 - Unimplemented Opcode: %.4X\n", s.currentOpcode)
 			break
 		}
@@ -173,8 +174,8 @@ func executeCycle(s *State, t *Timers) {
 
 	case 0xB000: // BNNN - Jumps to the address at NNN + Register 0
 		fmt.Printf("JP 0 %.4X\n", s.currentOpcode&0x0FFF)
-		s.programCounter = ((s.currentOpcode & 0x0FFF) + uint16(s.registers[0])) - 2
-		break
+		s.programCounter = ((s.currentOpcode & 0x0FFF) + uint16(s.registers[0]))
+		return
 
 	case 0xC000: // CXNN - Sets Register X to a Random Number & NN
 		fmt.Printf("RND %d %.4X\n", rX, s.currentOpcode&0x0FFF)
