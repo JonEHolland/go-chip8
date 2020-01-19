@@ -6,7 +6,7 @@ import (
 
 func main() {
 
-	var state = newState("blinky.ch8")
+	var state = newState("roms/blinky.ch8")
 	var timers = newTimers()
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
