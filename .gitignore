@@ -1,5 +1,6 @@
 go-chip8
 .idea
+out
 
 # Binaries for programs and plugins
 *.exe

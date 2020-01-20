@@ -8,8 +8,12 @@ import (
 func executeCycle(s *State, t *Timers) {
 	// Opcodes are two sequential bytes, so combine them into the currentOpcode
 	s.currentOpcode = uint16(s.memory[s.programCounter])<<8 | uint16(s.memory[s.programCounter+1])
+
+	// Decode the opcode into all of the possible values we will see
 	var rX = (s.currentOpcode & 0x0F00) >> 8
 	var rY = (s.currentOpcode & 0x00F0) >> 4
+	var address = (s.currentOpcode & 0x0FFF)
+	var value = (s.currentOpcode & 0x00FF)
 
 	fmt.Printf("%.4X - ", s.programCounter)
 
@@ -41,28 +45,26 @@ func executeCycle(s *State, t *Timers) {
 		break
 
 	case 0x1000: // 1NNN - Jump to address NNN
-		fmt.Printf("JP %.4X\n", s.currentOpcode&0x0FFF)
-		s.programCounter = (s.currentOpcode & 0x0FFF)
+		fmt.Printf("JP %.4X\n", address)
+		s.programCounter = address
 		return
 
 	case 0x2000: // 2NNN - Call Subroutine at NNN
-		fmt.Printf("CALL %.4X\n", s.currentOpcode&0x0FFF)
+		fmt.Printf("CALL %.4X\n", address)
 		s.stack[s.stackPointer] = s.programCounter
 		s.stackPointer++
-		s.programCounter = (s.currentOpcode & 0x0FFF)
+		s.programCounter = address
 		return
 
 	case 0x3000: // 3XNN - Skip next instruction if RegisterX == NN
-		fmt.Printf("SE %d %.4X\n", rX, (s.currentOpcode & 0x00FF))
-		var value = (s.currentOpcode & 0x00FF)
+		fmt.Printf("SE %d %.4X\n", rX, value)
 		if s.registers[rX] == uint8(value) {
 			s.programCounter += 2
 		}
 		break
 
 	case 0x4000: // 3XNN - Skip next instruction if RegisterX != NN
-		fmt.Printf("SNE %d %.4X\n", rX, (s.currentOpcode & 0x00FF))
-		var value = (s.currentOpcode & 0x00FF)
+		fmt.Printf("SNE %d %.4X\n", rX, value)
 		if s.registers[rX] != uint8(value) {
 			s.programCounter += 2
 		}
@@ -76,13 +78,13 @@ func executeCycle(s *State, t *Timers) {
 		break
 
 	case 0x6000: // 6XNN - Sets Register X to NN
-		fmt.Printf("LD %d %.4X\n", rX, s.currentOpcode&0x00FF)
-		s.registers[rX] = uint8(s.currentOpcode & 0x00FF)
+		fmt.Printf("LD %d %.4X\n", rX, value)
+		s.registers[rX] = uint8(value)
 		break
 
 	case 0x7000: // 7XNN - Adds NN to Register X
-		fmt.Printf("ADD %d %.4X\n", rX, s.currentOpcode&0x00FF)
-		s.registers[rX] += uint8(s.currentOpcode & 0x00FF)
+		fmt.Printf("ADD %d %.4X\n", rX, value)
+		s.registers[rX] += uint8(value)
 		break
 
 	case 0x8000:
@@ -106,7 +108,7 @@ func executeCycle(s *State, t *Timers) {
 			break
 		case 0x0004: // 8XY4 - Add Register X to Register Y, setting Register F if there is a carry
 			fmt.Printf("ADD %d %d\n", rX, rY)
-			var temp = uint16(s.registers[rX] + s.registers[rY])
+			var temp = uint16(s.registers[rX]) + uint16(s.registers[rY])
 			if temp > 255 {
 				s.registers[0xF] = 1
 			} else {
@@ -120,7 +122,7 @@ func executeCycle(s *State, t *Timers) {
 			break
 		case 0x0005: // 8XY5 - Sub Register X from Register Y, unsetting Register F if there is a borrow
 			fmt.Printf("SUB %d %d\n", rX, rY)
-			var temp = uint16(s.registers[rX] - s.registers[rY])
+			var temp = uint16(s.registers[rX]) - uint16(s.registers[rY])
 			if s.registers[rX] > s.registers[rY] {
 				s.registers[0xF] = 1
 			} else {
@@ -139,7 +141,7 @@ func executeCycle(s *State, t *Timers) {
 			break
 		case 0x0007: // 8XY7 - Sub Register Y from Register X - Register X. Register F is unset if there is a borrow
 			fmt.Printf("SUBN %d %d\n", rX, rY)
-			var temp = uint16(s.registers[rY] - s.registers[rX])
+			var temp = uint16(s.registers[rY]) - uint16(s.registers[rX])
 			if s.registers[rY] > s.registers[rX] {
 				s.registers[0xF] = 1
 			} else {
@@ -170,17 +172,17 @@ func executeCycle(s *State, t *Timers) {
 		break
 
 	case 0xA000: // ANNN - Sets index pointer to the address NNN
-		fmt.Printf("LD I %.4X\n", (s.currentOpcode&0x0FFF)>>8)
-		s.indexPointer = (s.currentOpcode & 0x0FFF) >> 8
+		fmt.Printf("LD I %.4X\n", address)
+		s.indexPointer = address
 		break
 
 	case 0xB000: // BNNN - Jumps to the address at NNN + Register 0
-		fmt.Printf("JP 0 %.4X\n", s.currentOpcode&0x0FFF)
-		s.programCounter = ((s.currentOpcode & 0x0FFF) + uint16(s.registers[0]))
+		fmt.Printf("JP 0 %.4X\n", address)
+		s.programCounter = address + uint16(s.registers[0])
 		return
 
 	case 0xC000: // CXNN - Sets Register X to a Random Number & NN
-		fmt.Printf("RND %d %.4X\n", rX, s.currentOpcode&0x0FFF)
+		fmt.Printf("RND %d %.4X\n", rX, value)
 		var mask = (s.currentOpcode & 0x00FF) >> 8
 		s.registers[rX] = uint8(rand.Intn(255)) & uint8(mask)
 		break
