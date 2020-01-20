@@ -83,10 +83,6 @@ func main() {
 	}
 }
 
-func timeInMillis() int64 {
-	return time.Now().UnixNano() / 1000000
-}
-
 func vmCycle(state *State, timers *Timers) {
 	executeCycle(state, timers)
 	timers.executeTimers()
