@@ -68,11 +68,12 @@ func main() {
 
 func drawScreen(state *State, window *sdl.Window, renderer *sdl.Renderer) {
 	renderer.Clear()
-	renderer.SetDrawColor(255,255,255,255)
+	renderer.SetDrawColor(0,0,0,255)
 	for x := uint8(0); x < 64; x++ {
 		for y := uint8(0); y < 32; y++ {
 			if state.graphicsBuffer[x][y] == 1 {
-				_ = renderer.DrawRect(&sdl.Rect{
+				renderer.SetDrawColor(255,255,255,255)
+				_ = renderer.FillRect(&sdl.Rect{
 					X: int32(x) * 10,
 					Y: int32(y) * 10,
 					W: 10,
