@@ -2,13 +2,14 @@ package main
 
 import (
 	"github.com/veandco/go-sdl2/sdl"
+	"os"
 )
 
 func main() {
 	var defaultWindowWidth = int32(640)
 	var defaultWindowHeight = int32(320)
-
-	var state = newState("roms/blinky.ch8")
+	var romName = os.Args[1]
+	var state = newState(romName)
 	var timers = newTimers()
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -17,7 +18,7 @@ func main() {
 	defer sdl.Quit()
 
 	window, err := sdl.CreateWindow(
-		"Go-Chip8",
+		"Go-Chip8 - " + romName,
 		sdl.WINDOWPOS_UNDEFINED,
 		sdl.WINDOWPOS_UNDEFINED,
 		defaultWindowWidth,
@@ -85,6 +86,7 @@ func drawScreen(state *State, window *sdl.Window, renderer *sdl.Renderer) {
 	renderer.Present()
 	window.UpdateSurface()
 }
+
 func updateKeys(state *State, event sdl.Event) {
 	switch t := event.(type) {
 	case *sdl.KeyboardEvent:
