@@ -14,9 +14,14 @@ brew install sdl
 brew install pkg-config
 ```
 
-## Running:
+## Building:
 
 ```
 go build
 ```
 
+## Running:
+
+```
+./go-chip8 [ROM PATH]
+```
