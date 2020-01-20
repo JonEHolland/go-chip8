@@ -21,8 +21,10 @@ func executeCycle(s *State, t *Timers) {
 
 		case 0x00E0: // 00EE - Clear Screen
 			fmt.Println("CLS")
-			for i := 0; i < 2048; i++ {
-				s.graphicsBuffer[i] = 0
+			for x := 0; x < 64; x++ {
+				for y := 0; y < 32; y++ {
+					s.graphicsBuffer[x][y] = 0
+				}
 			}
 			s.drawFlag = true
 			break
@@ -198,12 +200,13 @@ func executeCycle(s *State, t *Timers) {
 			pixel = s.memory[s.indexPointer+y]
 			for x := uint16(0); x < 8; x++ {
 				if (pixel & (0x80 >> x)) != 0 {
-					var offset = (rX + x + ((rY + y) * 64))
-					if s.graphicsBuffer[offset] == 1 {
+					var actualX = rX + x
+					var actualY = rY + y
+					if s.graphicsBuffer[actualX][actualY] == 1 {
 						s.registers[0xF] = 1
 					}
 
-					s.graphicsBuffer[offset] ^= 1
+					s.graphicsBuffer[actualX][actualY] ^= 1
 				}
 			}
 		}

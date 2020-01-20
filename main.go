@@ -5,6 +5,8 @@ import (
 )
 
 func main() {
+	var defaultWindowWidth = int32(640)
+	var defaultWindowHeight = int32(320)
 
 	var state = newState("roms/blinky.ch8")
 	var timers = newTimers()
@@ -18,8 +20,8 @@ func main() {
 		"Go-Chip8",
 		sdl.WINDOWPOS_UNDEFINED,
 		sdl.WINDOWPOS_UNDEFINED,
-		64,
-		32,
+		defaultWindowWidth,
+		defaultWindowHeight,
 		sdl.WINDOW_SHOWN)
 
 	if err != nil {
@@ -35,10 +37,6 @@ func main() {
 
 	renderer.Clear()
 	renderer.SetDrawColor(0, 0, 0, 0)
-
-	//sdl.PollEvent()
-	//sdl.Delay(2000)
-
 	window.UpdateSurface()
 
 	// TODO - This loop should run at a specific speed
@@ -46,6 +44,12 @@ func main() {
 	for running {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
+			case *sdl.KeyboardEvent:
+				updateKeys(state, &event)
+				break
+			case *sdl.WindowEvent:
+				// TODO - Handle Window Resize
+				break
 			case *sdl.QuitEvent:
 				running = false
 				break
@@ -56,20 +60,30 @@ func main() {
 		timers.executeTimers()
 
 		if state.drawFlag {
-			renderer.Clear()
-			for x := uint8(0); x < 64; x++ {
-				for y := uint8(0); y < 32; y++ {
-					if state.graphicsBuffer[x+(x*y)] == 1 {
-						renderer.DrawPoint(int32(x), int32(y))
-					}
-				}
-			}
-
-			renderer.Present()
-			window.UpdateSurface()
+			drawScreen(state, window, renderer)
 			state.drawFlag = false
 		}
-
-		// TODO - Set Key State
 	}
+}
+
+func drawScreen(state *State, window *sdl.Window, renderer *sdl.Renderer) {
+	renderer.Clear()
+	renderer.SetDrawColor(255,255,255,255)
+	for x := uint8(0); x < 64; x++ {
+		for y := uint8(0); y < 32; y++ {
+			if state.graphicsBuffer[x][y] == 1 {
+				_ = renderer.DrawRect(&sdl.Rect{
+					X: int32(x) * 10,
+					Y: int32(y) * 10,
+					W: 10,
+					H: 10})
+			}
+		}
+	}
+
+	renderer.Present()
+	window.UpdateSurface()
+}
+func updateKeys(state *State, event *sdl.Event) {
+
 }

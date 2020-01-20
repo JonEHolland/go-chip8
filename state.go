@@ -8,7 +8,7 @@ import (
 type State struct {
 	registers      [16]uint8
 	memory         [4096]uint8
-	graphicsBuffer [2048]uint8
+	graphicsBuffer [64][32]uint8
 	drawFlag       bool
 	indexPointer   uint16
 	stack          [16]uint16
