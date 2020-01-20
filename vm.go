@@ -12,8 +12,8 @@ func executeCycle(s *State, t *Timers) {
 	// Decode the opcode into all of the possible values we will see
 	var rX = (s.currentOpcode & 0x0F00) >> 8
 	var rY = (s.currentOpcode & 0x00F0) >> 4
-	var address = (s.currentOpcode & 0x0FFF)
-	var value = (s.currentOpcode & 0x00FF)
+	var address = s.currentOpcode & 0x0FFF
+	var value = s.currentOpcode & 0x00FF
 
 	fmt.Printf("%.4X - ", s.programCounter)
 

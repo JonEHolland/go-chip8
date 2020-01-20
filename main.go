@@ -9,7 +9,16 @@ func main() {
 	var defaultWindowWidth = int32(640)
 	var defaultWindowHeight = int32(320)
 	var romName = os.Args[1]
+
 	var state = newState(romName)
+	// Hook so that state is dumped if the program panics
+	defer func() {
+		if err := recover(); err != nil {
+			state.dump()
+			panic (err)
+		}
+	}()
+
 	var timers = newTimers()
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 )
 
@@ -60,4 +61,19 @@ func newState(romName string) *State {
 	}
 
 	return &s
+}
+
+func (s *State) dump () {
+	fmt.Println("Dumping VM State")
+	fmt.Println("-----------------")
+	fmt.Printf("Program Counter: %.4X\n", s.programCounter)
+	fmt.Printf("Current Opcode: %.4X\n", s.currentOpcode)
+	fmt.Println("-----------------")
+	fmt.Printf("Index Pointer: %.4X\n", s.indexPointer)
+	fmt.Printf("Stack Pointer: %d\n", s.stackPointer)
+	fmt.Println("-----------------")
+	for r := 0; r < 16; r++ {
+		fmt.Printf("Register %.1X: %.4X   ---   Stack %.1X: %.4X\n", r, s.registers[r], r, s.stack[r])
+	}
+	fmt.Println("-----------------")
 }
