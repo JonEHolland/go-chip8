@@ -192,18 +192,18 @@ func executeCycle(s *State, t *Timers) {
 		// Each row of pixels starts the IndexPointer
 		// IndexPointer is not incremented after this operation
 		// rF is set if if any screen pixels are flipped from set to unset
-		var height = s.currentOpcode & 0x000F
+		var height = uint8(s.currentOpcode & 0x000F)
 		var pixel = uint8(0)
 		fmt.Printf("DRW %d %d %d\n", rX, rY, height)
 
 		s.registers[0xF] = 0
 
-		for y := uint16(0); y < height; y++ {
-			pixel = s.memory[s.indexPointer+y]
-			for x := uint16(0); x < 8; x++ {
+		for y := uint8(0); y < height; y++ {
+			pixel = s.memory[s.indexPointer+uint16(y)]
+			for x := uint8(0); x < 8; x++ {
 				if (pixel & (0x80 >> x)) != 0 {
-					var actualX = rX + x
-					var actualY = rY + y
+					var actualX = s.registers[rX] + x
+					var actualY = s.registers[rY] + y
 					if s.graphicsBuffer[actualX][actualY] == 1 {
 						s.registers[0xF] = 1
 					}
