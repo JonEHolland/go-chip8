@@ -1,5 +1,7 @@
 package main
 
+import "github.com/veandco/go-sdl2/sdl"
+
 // Timers struct
 type Timers struct {
 	counter    uint8
@@ -28,7 +30,9 @@ func (t *Timers) executeTimers() {
 	}
 
 	if t.soundTimer > 0 {
-		// A Beep should play
+		sdl.PauseAudio(false)
 		t.soundTimer--
+	} else {
+		sdl.PauseAudio(true)
 	}
 }

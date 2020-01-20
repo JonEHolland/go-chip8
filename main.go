@@ -17,6 +17,10 @@ func main() {
 	}
 	defer sdl.Quit()
 
+	initAudio()
+	sdl.PauseAudio(true)
+	defer sdl.CloseAudio()
+
 	window, err := sdl.CreateWindow(
 		"Go-Chip8 - " + romName,
 		sdl.WINDOWPOS_UNDEFINED,
