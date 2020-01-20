@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/veandco/go-sdl2/sdl"
 	"os"
+	"time"
 )
 
 func main() {
@@ -53,16 +54,14 @@ func main() {
 	renderer.SetDrawColor(0, 0, 0, 0)
 	window.UpdateSurface()
 
-	// TODO - This loop should run at a specific speed
-	running := true
+	var running = true
+	var nextTick = time.Now().UnixNano()
+
 	for running {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.KeyboardEvent:
 				updateKeys(state, event)
-				break
-			case *sdl.WindowEvent:
-				// TODO - Handle Window Resize
 				break
 			case *sdl.QuitEvent:
 				running = false
@@ -70,14 +69,27 @@ func main() {
 			}
 		}
 
-		executeCycle(state, timers)
-		timers.executeTimers()
+		// The CPU should only run a cycle every 500hz (2ms)
+		var currentTime = time.Now().UnixNano()
+		if currentTime >= nextTick {
+			vmCycle(state, timers)
+			nextTick = currentTime + 2e6
+		}
 
 		if state.drawFlag {
 			drawScreen(state, window, renderer)
 			state.drawFlag = false
 		}
 	}
+}
+
+func timeInMillis() int64 {
+	return time.Now().UnixNano() / 1000000
+}
+
+func vmCycle(state *State, timers *Timers) {
+	executeCycle(state, timers)
+	timers.executeTimers()
 }
 
 func drawScreen(state *State, window *sdl.Window, renderer *sdl.Renderer) {
@@ -104,7 +116,7 @@ func updateKeys(state *State, event sdl.Event) {
 	switch t := event.(type) {
 	case *sdl.KeyboardEvent:
 		var direction = uint8(0)
-		if t.Type == sdl.KEYDOWN {
+		if t.State == sdl.PRESSED {
 			direction = uint8(1)
 		} else {
 			direction = uint8(0)
