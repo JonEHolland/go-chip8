@@ -183,8 +183,7 @@ func executeCycle(s *State, t *Timers) {
 
 	case 0xC000: // CXNN - Sets Register X to a Random Number & NN
 		fmt.Printf("RND %d %.4X\n", rX, value)
-		var mask = (s.currentOpcode & 0x00FF) >> 8
-		s.registers[rX] = uint8(rand.Intn(255)) & uint8(mask)
+		s.registers[rX] = uint8(rand.Intn(255)) & uint8(value)
 		break
 
 	case 0xD000: // DXYN - Draws a Sprite
@@ -204,6 +203,12 @@ func executeCycle(s *State, t *Timers) {
 				if (pixel & (0x80 >> x)) != 0 {
 					var actualX = s.registers[rX] + x
 					var actualY = s.registers[rY] + y
+
+					// Don't draw if out of bounds
+					if actualX >= 64 || actualX < 0 || actualY >= 32 || actualY < 0 {
+						break
+					}
+
 					if s.graphicsBuffer[actualX][actualY] == 1 {
 						s.registers[0xF] = 1
 					}
