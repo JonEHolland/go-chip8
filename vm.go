@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 func executeCycle(s *State, t *Timers) {
@@ -183,7 +184,8 @@ func executeCycle(s *State, t *Timers) {
 
 	case 0xC000: // CXNN - Sets Register X to a Random Number & NN
 		fmt.Printf("RND %d %.4X\n", rX, value)
-		s.registers[rX] = uint8(rand.Intn(255)) & uint8(value)
+		var r = rand.New(rand.NewSource(time.Now().UnixNano()))
+		s.registers[rX] = uint8(r.Intn(255)) & uint8(value)
 		break
 
 	case 0xD000: // DXYN - Draws a Sprite
